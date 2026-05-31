@@ -1,0 +1,19 @@
+[Unit]
+Description=NetBox Postgres
+
+[Container]
+ContainerName=netbox-postgres
+Image=docker.io/postgres:18-alpine
+Pod=netbox.pod
+Secret=netbox-db-pass
+Environment=POSTGRES_DB=netbox
+Environment=POSTGRES_USER=netbox
+Environment=POSTGRES_PASSWORD_FILE=/run/secrets/netbox-db-pass
+Volume=netbox-postgres:/var/lib/postgresql
+
+[Service]
+Restart=on-failure
+RestartSec=10s
+
+[Install]
+WantedBy=default.target

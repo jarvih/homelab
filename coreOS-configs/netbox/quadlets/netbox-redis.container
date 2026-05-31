@@ -1,0 +1,17 @@
+[Unit]
+Description=NetBox Redis
+
+[Container]
+ContainerName=netbox-redis
+Image=docker.io/valkey/valkey:9.0-alpine
+Pod=netbox.pod
+Secret=netbox-redis-pass
+Volume=netbox-redis-data:/data
+Exec=sh -c 'valkey-server --appendonly yes --requirepass $(cat /run/secrets/netbox-redis-pass)'
+
+[Service]
+Restart=on-failure
+RestartSec=10s
+
+[Install]
+WantedBy=default.target
