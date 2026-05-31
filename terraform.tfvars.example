@@ -1,0 +1,13 @@
+# Copy to terraform.tfvars and fill in. terraform.tfvars is gitignored.
+pve_endpoint = "https://pve1.example.lan:8006/"
+pve_username = "root@pam"
+pve_password = "change-me"
+pve_insecure = true
+
+image_node      = "pve1"
+image_datastore = "local"
+vm_datastore    = "local-lvm"
+bridge          = "vmbr0"
+
+fcos_stream = "stable"
+fcos_arch   = "x86_64"
