@@ -28,48 +28,31 @@ storage:
           days = [ "Sat", "Sun" ]
           start_time = "22:30"
           length_minutes = 60
-    - path: /var/tmp/bootstrap-quadlets.conf
+    - path: /etc/containers/systemd/netbox.pod
       mode: 0644
       contents:
-        inline: |
-          system:https://raw.githubusercontent.com/jarvih/podman-quadlets/refs/heads/main/tailscale/tailscale.container
-    - path: /var/tmp/bootstrap-quadlets.sh
-      mode: 0755
+        local: quadlets/netbox.pod
+    - path: /etc/containers/systemd/netbox.container
+      mode: 0644
       contents:
-        inline: |
-          #!/bin/sh
-          set -e
-
-          while IFS=: read -r level url; do
-            case "$level" in
-              ''|\#*) continue ;;
-            esac
-            if [ "$level" = "system" ]; then
-              podman quadlet install -r "$url"
-            else
-              if ! id "$level" >/dev/null 2>&1; then
-                useradd --system --shell /sbin/nologin "$level"
-              fi
-              loginctl enable-linger "$level"
-              runuser -l "$level" -c "podman quadlet install -r '$url'"
-              systemctl --user -M "$level"@ daemon-reload
-            fi
-          done < /var/tmp/bootstrap-quadlets.conf
-systemd:
-  units:
-    - name: bootstrap-quadlets.service
-      enabled: true
-      contents: |
-        [Unit]
-        Description=Bootstrap quadlet installation
-        After=network-online.target
-        Wants=network-online.target
-        ConditionFirstBoot=yes
-
-        [Service]
-        Type=oneshot
-        ExecStart=/usr/bin/bash /var/tmp/bootstrap-quadlets.sh
-        RemainAfterExit=yes
-
-        [Install]
-        WantedBy=multi-user.target
+        local: quadlets/netbox.container
+    - path: /etc/containers/systemd/netbox-postgres.container
+      mode: 0644
+      contents:
+        local: quadlets/netbox-postgres.container
+    - path: /etc/containers/systemd/netbox-redis.container
+      mode: 0644
+      contents:
+        local: quadlets/netbox-redis.container
+    - path: /etc/containers/systemd/netbox-redis-cache.container
+      mode: 0644
+      contents:
+        local: quadlets/netbox-redis-cache.container
+    - path: /etc/containers/systemd/netbox-worker.container
+      mode: 0644
+      contents:
+        local: quadlets/netbox-worker.container
+    - path: /etc/containers/systemd/tailscale.container
+      mode: 0644
+      contents:
+        local: quadlets/tailscale.container
