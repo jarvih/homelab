@@ -9,3 +9,7 @@ terraform.tfvars
 *.qcow2.*
 *.img
 crash.log
+*.ign
+*.qcow2
+.vscode/
+local/

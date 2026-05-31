@@ -8,6 +8,6 @@ locals {
     #lab        = { vmid = 9005, node = "lenovo-proxmox1", cores = 2, memory = 2048, disk = 32 }
   }
 
-  # Sibling repo with the Butane (.bu) source configs.
-  bu_root = "${path.module}/../coreOS-configs"
+  # Butane (.bu) source configs, now vendored under this repo.
+  bu_root = "${path.module}/coreOS-configs"
 }
