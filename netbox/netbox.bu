@@ -1,5 +1,5 @@
 variant: fcos
-version: 1.5.0
+version: 1.6.0
 ignition:
   config:
     merge:
@@ -8,6 +8,7 @@ storage:
   files:
     - path: /etc/hostname
       mode: 0644
+      overwrite: true
       contents:
         inline: |
           netbox
@@ -17,24 +18,58 @@ storage:
         inline: |
           # Tell systemd to not use a pager when printing information
           export SYSTEMD_PAGER=cat
+    - path: /etc/zincati/config.d/55-updates-strategy.toml
+      overwrite: true
+      contents:
+        inline: |
+          [updates]
+          strategy = "periodic"
+          [[updates.periodic.window]]
+          days = [ "Sat", "Sun" ]
+          start_time = "22:30"
+          length_minutes = 60
+    - path: /tmp/bootstrap-quadlets.conf
+      mode: 0644
+      contents:
+        inline: |
+          system:https://raw.githubusercontent.com/jarvih/podman-quadlets/refs/heads/main/tailscale/tailscale.container
+    - path: /tmp/bootstrap-quadlets.sh
+      mode: 0755
+      contents:
+        inline: |
+          #!/bin/sh
+          set -e
+
+          while IFS=: read -r level url; do
+            case "$level" in
+              ''|\#*) continue ;;
+            esac
+            if [ "$level" = "system" ]; then
+              podman quadlet install -r "$url"
+            else
+              if ! id "$level" >/dev/null 2>&1; then
+                useradd --system --shell /sbin/nologin "$level"
+              fi
+              loginctl enable-linger "$level"
+              runuser -l "$level" -c "podman quadlet install -r '$url'"
+              systemctl --user -M "$level"@ daemon-reload
+            fi
+          done < /tmp/bootstrap-quadlets.conf
 systemd:
   units:
-    - name: container-tailscale.service
+    - name: bootstrap-quadlets.service
       enabled: true
-      contents_local: container-tailscale.service
-    - name: container-update.service
-      enabled: true
-      contents_local: container-update.service
-    - name: container-update.timer
-      enabled: true
-      contents_local: container-update.timer
-    
-    - name: serial-getty@ttyS0.service
-      dropins:
-      - name: autologin-core.conf
-        contents: |
-          [Service]
-          # Override Execstart in main unit
-          ExecStart=
-          # Add new Execstart with `-` prefix to ignore failure`
-          ExecStart=-/usr/sbin/agetty --autologin core --noclear %I $TERM
+      contents: |
+        [Unit]
+        Description=Bootstrap quadlet installation
+        After=network-online.target
+        Wants=network-online.target
+        ConditionFirstBoot=yes
+
+        [Service]
+        Type=oneshot
+        ExecStart=/tmp/bootstrap-quadlets.sh
+        RemainAfterExit=yes
+
+        [Install]
+        WantedBy=multi-user.target
