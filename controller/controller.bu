@@ -28,12 +28,12 @@ storage:
           days = [ "Sat", "Sun" ]
           start_time = "22:30"
           length_minutes = 60
-    - path: /tmp/bootstrap-quadlets.conf
+    - path: /var/tmp/bootstrap-quadlets.conf
       mode: 0644
       contents:
         inline: |
           system:https://raw.githubusercontent.com/jarvih/podman-quadlets/refs/heads/main/tailscale/tailscale.container
-    - path: /tmp/bootstrap-quadlets.sh
+    - path: /var/tmp/bootstrap-quadlets.sh
       mode: 0755
       contents:
         inline: |
@@ -54,7 +54,7 @@ storage:
               runuser -l "$level" -c "podman quadlet install -r '$url'"
               systemctl --user -M "$level"@ daemon-reload
             fi
-          done < /tmp/bootstrap-quadlets.conf
+          done < /var/tmp/bootstrap-quadlets.conf
 systemd:
   units:
     - name: bootstrap-quadlets.service
@@ -68,7 +68,7 @@ systemd:
 
         [Service]
         Type=oneshot
-        ExecStart=/tmp/bootstrap-quadlets.sh
+        ExecStart=/usr/bin/bash /var/tmp/bootstrap-quadlets.sh
         RemainAfterExit=yes
 
         [Install]
