@@ -1,0 +1,13 @@
+[Unit]
+Description=Build unbound image from Git repo
+
+[Service]
+ExecStartPre=/usr/bin/git clone --depth=1 https://github.com/jarvih/unbound.git /tmp/dns
+ExecStartPost=rm -rf /tmp/dns
+
+[Build]
+ImageTag=localhost/unbound:latest
+File=/tmp/dns/Containerfile
+SetWorkingDirectory=/tmp/dns
+ForceRM=true
+

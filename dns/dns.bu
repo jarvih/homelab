@@ -32,4 +32,14 @@ storage:
       mode: 0644
       overwrite: true
       contents:
-        source: https://raw.githubusercontent.com/jarvih/podman-quadlets/refs/heads/main/tailscale/tailscale.container
+        local: quadlets/tailscale.container
+    - path: /etc/containers/systemd/unbound.build
+      mode: 0644
+      overwrite: true
+      contents:
+        local: quadlets/unbound.build
+    - path: /etc/containers/systemd/unbound.container
+      mode: 0644
+      overwrite: true
+      contents:
+        local: quadlets/unbound.container

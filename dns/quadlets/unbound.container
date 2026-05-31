@@ -1,0 +1,12 @@
+[Unit]
+Description=Run unbound recursive nameserver
+Wants=network-online.target
+
+[Container]
+Image=unbound.build
+ContainerName=unbound
+PublishPort=53:53/udp
+
+[Install]
+WantedBy=default.target
+
