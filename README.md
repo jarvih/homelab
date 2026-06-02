@@ -1,16 +1,18 @@
 # CoreOS on Proxmox (OpenTofu)
 
-Declaratively deploys Fedora CoreOS (FCOS) VMs to a Proxmox cluster, reusing the
-Butane configs in the sibling repo [`../coreOS-configs`](../coreOS-configs).
+Declaratively deploys Fedora CoreOS (FCOS) VMs to a Proxmox cluster, using the
+Butane configs vendored under [`coreOS-configs/`](coreOS-configs).
 
 ## How Ignition reaches the VM
 
 Proxmox's cloud-init does **not** understand Ignition. FCOS reads its config from
 a QEMU `fw_cfg` device at `opt/com.coreos/config`. So:
 
-1. `data "ct_config"` (poseidon/ct) transpiles each `<host>/<host>.bu` to
-   Ignition JSON in-OpenTofu, merging the shared `local/user.bu` in as a snippet.
-   (The configs are fcos 1.5.0 — poseidon/ct v0.14 does not support 1.6.0.)
+1. `data "ct_config"` (poseidon/ct) transpiles each `coreOS-configs/<host>/<host>.bu`
+   to Ignition JSON in-OpenTofu, with `files_dir` set to that host's dir so its
+   `contents.local: quadlets/...` references resolve. The shared user is merged
+   in as a snippet built in `ignition.tf`. (fcos 1.5.0 — poseidon/ct v0.14 does
+   not support 1.6.0.)
 2. The JSON is passed inline through the VM's QEMU `args`:
    `-fw_cfg 'name=opt/com.coreos/config,string=<rendered>'`.
    Commas are doubled (`,` → `,,`) because comma is the `-fw_cfg` separator.
@@ -26,8 +28,9 @@ a QEMU `fw_cfg` device at `opt/com.coreos/config`. So:
 - SSH access to the Proxmox node (`ssh { agent = true }` in `providers.tf`) for
   image upload / disk import. Make sure `ssh-add -l` shows your key.
 
-- `../coreOS-configs/local/id_ed25519.pub` — the SSH pubkey referenced by
-  `local/user.bu` (e.g. `cp ~/.ssh/id_ed25519.pub ../coreOS-configs/local/`).
+- `coreOS-configs/local/id_ed25519.pub` — the SSH pubkey for the `jahe` user.
+  `ignition.tf` reads it and inlines it into the user snippet
+  (e.g. `cp ~/.ssh/id_ed25519.pub coreOS-configs/local/`).
 
 No butane/podman is needed — Ignition is transpiled in-OpenTofu.
 
@@ -60,10 +63,13 @@ Edit `local.hosts` in `hosts.tf` (vmid / node / cores / memory / disk per host).
 - **Butane spec is 1.5.0.** The configs were downgraded from 1.6.0 (which only
   added s390x-specific features they don't use) so poseidon/ct v0.14 can
   transpile them.
-- **`merge.local` handling.** The `.bu` files keep their `merge.local: user.ign`
-  line, but `ignition.tf` strips that block from the in-memory string and merges
-  `local/user.bu` as a snippet instead — so no separate `user.ign` artifact is
-  needed. The files on disk are untouched.
+- **User / `merge.local` handling.** Host `.bu` files keep their
+  `merge.local: user.ign` line on disk, but `ignition.tf` strips it from the
+  in-memory string (ct's single `files_dir` already points at the host dir for
+  `quadlets/`) and injects the `jahe` user via a snippet defined in
+  `ignition.tf`, which inlines the pubkey from `coreOS-configs/local/id_ed25519.pub`.
+  So `coreOS-configs/local/user.bu` is **not** read by the deploy — to change the
+  user, edit `local.user_snippet` in `ignition.tf`.
 - **Large configs.** If a rendered config outgrows the `args` length limit,
   switch to the snippet `file=` delivery (upload the `.ign` as a `snippets` file
   and point `fw_cfg` at `/var/lib/vz/snippets/<host>.ign`).

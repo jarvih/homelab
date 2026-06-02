@@ -1,11 +1,12 @@
 # Transpile each host's Butane config to Ignition, in-OpenTofu.
 #
-# The host .bu files keep their `ignition.config.merge.local: user.ign` line on
-# disk, but we strip that block from the in-memory string before handing it to
-# ct (otherwise ct would try to read a user.ign file that isn't there) and merge
-# the shared user via a snippet instead. files_dir resolves the snippet's
-# id_ed25519.pub. Result: the jahe user ends up on every host, with no generated
-# files, no local_file resource, and no first-apply ordering problem.
+# files_dir points at each host's own directory so its `contents.local:
+# quadlets/...` references resolve. The host .bu also carries
+# `ignition.config.merge.local: user.ign`, which we strip from the in-memory
+# string (ct has a single files_dir and there's no user.ign on disk) and replace
+# with the shared user injected as a snippet. The .bu files on disk are
+# untouched. The snippet inlines the SSH pubkey from local/id_ed25519.pub so it
+# needs no files_dir of its own.
 locals {
   merge_block = <<EOT
 ignition:
@@ -13,6 +14,20 @@ ignition:
     merge:
       - local: user.ign
 EOT
+
+  ssh_pubkey = trimspace(file("${local.bu_root}/local/id_ed25519.pub"))
+
+  user_snippet = <<-EOT
+    variant: fcos
+    version: 1.5.0
+    passwd:
+      users:
+        - name: jahe
+          ssh_authorized_keys:
+            - ${local.ssh_pubkey}
+          groups:
+            - sudo
+  EOT
 }
 
 data "ct_config" "host" {
@@ -20,6 +35,6 @@ data "ct_config" "host" {
 
   content   = replace(file("${local.bu_root}/${each.key}/${each.key}.bu"), local.merge_block, "")
   strict    = true
-  snippets  = [file("${local.bu_root}/local/user.bu")]
-  files_dir = "${local.bu_root}/local"
+  snippets  = [local.user_snippet]
+  files_dir = "${local.bu_root}/${each.key}"
 }
