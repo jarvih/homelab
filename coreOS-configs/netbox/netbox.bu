@@ -29,10 +29,12 @@ storage:
     - path: /var/home/netbox/.config/containers/systemd
       user: { name: netbox }
       group: { name: netbox }
-    # NetBox config + env tree (%h/netbox). Seeded below with placeholder files
-    # the operator edits in place. config/ is 0755 so the in-container (mapped)
-    # user can read the bind-mounted configuration.py; env/ is private to the
-    # netbox user (systemd reads it via EnvironmentFile=).
+    # NetBox config + env tree (%h/netbox). env/ is seeded only with *.env.example
+    # templates (no real secrets); the operator copies each to the real name and
+    # fills it in. The quadlets gate on the real file via ConditionPathExists=, so
+    # a service stays inert until its env is present (never runs on placeholders).
+    # config/ is 0755 so the in-container (mapped) user can read the bind-mounted
+    # configuration.py; env/ is private to the netbox user (read via EnvironmentFile=).
     - path: /var/home/netbox/netbox
       mode: 0700
       user: { name: netbox }
@@ -117,35 +119,36 @@ storage:
       mode: 0644
       contents:
         local: quadlets/tailscale.container
-    # Seed config + env with placeholder files (sourced from config/*.example).
-    # The operator edits these in place to real values, then restarts the pod.
-    # configuration.py is world-readable (0644) so the bind-mounted, in-container
-    # user can read it; env files are 0600 (read only by the netbox user manager).
+    # Seed configuration.py (no secrets — reads everything from env) plus the
+    # *.env.example templates. The operator copies each template to its real name
+    # (drop .example) and fills in secrets; until then the quadlets' env check
+    # keeps each service inert. configuration.py is world-readable (0644) so the
+    # bind-mounted, in-container user can read it; env templates are 0600.
     - path: /var/home/netbox/netbox/config/configuration.py
       mode: 0644
       user: { name: netbox }
       group: { name: netbox }
       contents:
         local: config/configuration.py.example
-    - path: /var/home/netbox/netbox/env/netbox.env
+    - path: /var/home/netbox/netbox/env/netbox.env.example
       mode: 0600
       user: { name: netbox }
       group: { name: netbox }
       contents:
         local: config/netbox.env.example
-    - path: /var/home/netbox/netbox/env/postgres.env
+    - path: /var/home/netbox/netbox/env/postgres.env.example
       mode: 0600
       user: { name: netbox }
       group: { name: netbox }
       contents:
         local: config/postgres.env.example
-    - path: /var/home/netbox/netbox/env/redis.env
+    - path: /var/home/netbox/netbox/env/redis.env.example
       mode: 0600
       user: { name: netbox }
       group: { name: netbox }
       contents:
         local: config/redis.env.example
-    - path: /var/home/netbox/netbox/env/redis-cache.env
+    - path: /var/home/netbox/netbox/env/redis-cache.env.example
       mode: 0600
       user: { name: netbox }
       group: { name: netbox }

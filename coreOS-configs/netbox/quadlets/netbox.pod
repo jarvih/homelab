@@ -3,6 +3,15 @@ Description=NetBox Pod
 Wants=network-online.target
 After=network-online.target
 Wants=netbox-postgres.service netbox-redis.service netbox-redis-cache.service netbox.service netbox-worker.service
+# Gate the whole stack on every env file being present. If any is missing the
+# pod is skipped (condition failed, not a failure), so nothing comes up half
+# configured. The operator must put all four env files in place before starting.
+# (Individual containers also carry their own ConditionPathExists so a fresh boot
+# skips them cleanly instead of crash-looping trying to join a pod that's down.)
+ConditionPathExists=%h/netbox/env/netbox.env
+ConditionPathExists=%h/netbox/env/postgres.env
+ConditionPathExists=%h/netbox/env/redis.env
+ConditionPathExists=%h/netbox/env/redis-cache.env
 
 [Pod]
 PodName=netbox

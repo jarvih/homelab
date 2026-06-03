@@ -2,6 +2,9 @@
 Description=NetBox
 After=netbox-postgres.service netbox-redis.service netbox-redis-cache.service
 Requires=netbox-postgres.service netbox-redis.service netbox-redis-cache.service
+# Stay inert until the operator creates the real env file (copy netbox.env.example
+# → netbox.env and fill in secrets). Avoids running with placeholder secrets.
+ConditionPathExists=%h/netbox/env/netbox.env
 
 [Container]
 ContainerName=netbox

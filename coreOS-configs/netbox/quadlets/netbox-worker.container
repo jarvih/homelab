@@ -2,6 +2,8 @@
 Description=NetBox Worker
 After=netbox.service
 Requires=netbox.service
+# Shares netbox.env with the netbox service; stay inert until it exists.
+ConditionPathExists=%h/netbox/env/netbox.env
 
 [Container]
 ContainerName=netbox-worker

@@ -1,5 +1,8 @@
 [Unit]
 Description=NetBox Postgres
+# Stay inert until the operator creates the real env file (copy postgres.env.example
+# → postgres.env and fill in the password). Avoids initializing with a placeholder.
+ConditionPathExists=%h/netbox/env/postgres.env
 
 [Container]
 ContainerName=netbox-postgres
