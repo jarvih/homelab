@@ -12,3 +12,5 @@ crash.log
 */*.ign
 .vscode/
 */local/
+*.env
+configuration.py
