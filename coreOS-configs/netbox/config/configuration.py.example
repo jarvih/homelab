@@ -1,0 +1,39 @@
+"""Minimal NetBox configuration example.
+
+Copy to $HOME/netbox/config/configuration.py (drop the .example suffix), or
+replace it with your own. This reads the values supplied through netbox.env
+(see netbox.env.example). All in-pod services are reachable on localhost.
+"""
+
+import os
+
+# Hosts/domains NetBox will answer to. Set to your real hostname(s) in prod.
+ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS", "*").split()
+
+DATABASE = {
+    "NAME": os.environ.get("DB_NAME", "netbox"),
+    "USER": os.environ.get("DB_USER", "netbox"),
+    "PASSWORD": os.environ.get("DB_PASSWORD", ""),
+    "HOST": os.environ.get("DB_HOST", "localhost"),
+    "PORT": os.environ.get("DB_PORT", "5432"),
+    "CONN_MAX_AGE": 300,
+}
+
+REDIS = {
+    "tasks": {
+        "HOST": os.environ.get("REDIS_HOST", "localhost"),
+        "PORT": int(os.environ.get("REDIS_PORT", 6379)),
+        "PASSWORD": os.environ.get("REDIS_PASSWORD", ""),
+        "DATABASE": int(os.environ.get("REDIS_DATABASE", 0)),
+        "SSL": False,
+    },
+    "caching": {
+        "HOST": os.environ.get("REDIS_CACHE_HOST", "localhost"),
+        "PORT": int(os.environ.get("REDIS_CACHE_PORT", 6380)),
+        "PASSWORD": os.environ.get("REDIS_CACHE_PASSWORD", ""),
+        "DATABASE": int(os.environ.get("REDIS_CACHE_DATABASE", 1)),
+        "SSL": False,
+    },
+}
+
+SECRET_KEY = os.environ.get("SECRET_KEY", "")

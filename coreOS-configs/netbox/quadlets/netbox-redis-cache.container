@@ -5,9 +5,9 @@ Description=NetBox Redis Cache
 ContainerName=netbox-redis-cache
 Image=docker.io/valkey/valkey:9.0-alpine
 Pod=netbox.pod
-Secret=netbox-redis-cache-pass
+EnvironmentFile=%h/netbox/env/redis-cache.env
 Volume=netbox-redis-cache-data:/data
-Exec=sh -c 'valkey-server --port 6380 --requirepass $(cat /run/secrets/netbox-redis-cache-pass)'
+Exec=sh -c 'valkey-server --port 6380 --requirepass "$REDIS_PASSWORD"'
 
 [Service]
 Restart=on-failure

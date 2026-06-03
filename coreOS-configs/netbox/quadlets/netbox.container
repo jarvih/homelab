@@ -9,15 +9,11 @@ Image=docker.io/netboxcommunity/netbox:v4.5-4.0.2
 Pod=netbox.pod
 User=netbox
 Group=root
-Secret=netbox-secret-key,target=secret_key
-Secret=netbox-db-pass,target=db_password
-Secret=netbox-redis-pass,target=redis_password
-Secret=netbox-redis-cache-pass,target=redis_cache_password
-Secret=netbox-api-token-pepper,target=api_token_pepper_1
+EnvironmentFile=%h/netbox/env/netbox.env
 Environment=DB_USER=netbox
 Environment=REDIS_CACHE_PORT=6380
 Environment=CORS_ORIGIN_ALLOW_ALL=True
-Volume=%h/infra/podman-quadlets/netbox/netbox-docker/configuration:/etc/netbox/config:z,ro
+Volume=%h/netbox/config:/etc/netbox/config:z,ro
 Volume=netbox-media-files:/opt/netbox/netbox/media:rw
 Volume=netbox-reports-files:/opt/netbox/netbox/reports:rw
 Volume=netbox-scripts-files:/opt/netbox/netbox/scripts:rw

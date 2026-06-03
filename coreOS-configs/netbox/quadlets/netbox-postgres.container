@@ -5,10 +5,9 @@ Description=NetBox Postgres
 ContainerName=netbox-postgres
 Image=docker.io/postgres:18-alpine
 Pod=netbox.pod
-Secret=netbox-db-pass
+EnvironmentFile=%h/netbox/env/postgres.env
 Environment=POSTGRES_DB=netbox
 Environment=POSTGRES_USER=netbox
-Environment=POSTGRES_PASSWORD_FILE=/run/secrets/netbox-db-pass
 Volume=netbox-postgres:/var/lib/postgresql
 
 [Service]
