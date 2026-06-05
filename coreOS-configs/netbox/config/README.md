@@ -2,7 +2,10 @@
 
 Ignition installs these on first boot (referenced from `netbox.bu` via
 `contents.local:`) to the rootless `netbox` service account's home
-(`$HOME` = `/var/home/netbox`). Two kinds of seed:
+(`$HOME` = `/var/home/netbox`). This dir mirrors the on-host layout — the
+seed sources live in `config/` and `env/` subfolders, the same split they
+get on the host (`$HOME/netbox/config` and `$HOME/netbox/env`). Two kinds
+of seed:
 
 - **`configuration.py`** — seeded ready-to-use (it holds no secrets; every value
   comes from the env files).
@@ -29,13 +32,13 @@ The quadlets bind-mount `%h/netbox/config` and read per-service env files from
 
 ## Where Ignition installs each seed file
 
-| Seed source (this dir)      | Installed on the host (owned by `netbox`)              |
-| --------------------------- | ------------------------------------------------------ |
-| `configuration.py.example`  | `$HOME/netbox/config/configuration.py` (0644)          |
-| `netbox.env.example`        | `$HOME/netbox/env/netbox.env.example` (0600)           |
-| `postgres.env.example`      | `$HOME/netbox/env/postgres.env.example` (0600)         |
-| `redis.env.example`         | `$HOME/netbox/env/redis.env.example` (0600)            |
-| `redis-cache.env.example`   | `$HOME/netbox/env/redis-cache.env.example` (0600)      |
+| Seed source (this dir)             | Installed on the host (owned by `netbox`)              |
+| ---------------------------------- | ------------------------------------------------------ |
+| `config/configuration.py.example`  | `$HOME/netbox/config/configuration.py` (0644)          |
+| `env/netbox.env.example`           | `$HOME/netbox/env/netbox.env.example` (0600)           |
+| `env/postgres.env.example`         | `$HOME/netbox/env/postgres.env.example` (0600)         |
+| `env/redis.env.example`            | `$HOME/netbox/env/redis.env.example` (0600)            |
+| `env/redis-cache.env.example`      | `$HOME/netbox/env/redis-cache.env.example` (0600)      |
 
 ## First-boot setup (as the netbox user)
 

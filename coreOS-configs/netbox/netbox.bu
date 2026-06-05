@@ -129,28 +129,28 @@ storage:
       user: { name: netbox }
       group: { name: netbox }
       contents:
-        local: config/configuration.py.example
+        local: config/config/configuration.py.example
     - path: /var/home/netbox/netbox/env/netbox.env.example
       mode: 0600
       user: { name: netbox }
       group: { name: netbox }
       contents:
-        local: config/netbox.env.example
+        local: config/env/netbox.env.example
     - path: /var/home/netbox/netbox/env/postgres.env.example
       mode: 0600
       user: { name: netbox }
       group: { name: netbox }
       contents:
-        local: config/postgres.env.example
+        local: config/env/postgres.env.example
     - path: /var/home/netbox/netbox/env/redis.env.example
       mode: 0600
       user: { name: netbox }
       group: { name: netbox }
       contents:
-        local: config/redis.env.example
+        local: config/env/redis.env.example
     - path: /var/home/netbox/netbox/env/redis-cache.env.example
       mode: 0600
       user: { name: netbox }
       group: { name: netbox }
       contents:
-        local: config/redis-cache.env.example
+        local: config/env/redis-cache.env.example
